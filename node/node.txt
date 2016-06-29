@@ -1,0 +1,8 @@
+G:
+cd node
+express -e test
+cd test
+npm install
+npm start
+
+http://localhost:3000/
