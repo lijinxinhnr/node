@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="./require.js"></script>
+</head>
+<body>
+<canvas id="myCanvas" width="600" height="600" style="border:solid goldenrod"></canvas>
+<br>
+小球数量：<input type="number" id="num" value="5"/>
+<input type="button" id="ok" onclick="ok()" value="开始"/>
+<input type="button" id="stop" onclick="stop()" value="暂停"/>
+<script>
+    var b, num, interval, stopFlag, balls;
+    //碰撞后速度处理
+    function seepDeal(b1, b2) {
+        //a1为球1的速度与x轴的夹角 v1为球1速度的大小
+        var v1 = Math.pow((Math.pow(b1.vx, 2) + Math.pow(b1.vy, 2)), 1 / 2);
+        var sina1 = b1.vy / v1, cosa1 = b1.vx / v1;
+
+        //a2为球2的速度与x轴的夹角 v2为球2速度的大小
+        var v2 = Math.pow((Math.pow(b2.vx, 2) + Math.pow(b2.vy, 2)), 1 / 2);
+        var sina2 = b2.vy / v2, cosa2 = b2.vx / v2;
+
+        //o为两球心连线与x轴的夹角，由1指向2
+        var l = Math.pow((b1.x - b2.x) * (b1.x - b2.x) + (b1.y - b2.y) * (b1.y - b2.y), 1 / 2);
+        var sino = (b2.y - b1.y) / l;
+        var coso = (b2.x - b1.x) / l;
+
+        //r1和r2分别是球1球2与球心连线的夹角；
+        var sinr1 = sina1 * coso - cosa1 * sino;
+        var cosr1 = cosa1 * coso + sina1 * sino;
+
+        var sinr2 = sina2 * coso - cosa2 * sino;
+        var cosr2 = cosa2 * coso + sina2 * sino;
+
+        /*碰撞前，相对球心连线的坐标有
+         * v1:(cosr1*v1,sinr1*v1)
+         * v2:(cosr2*v2,sinr2*v2)
+         *
+         * 当两个小球的质量相等时，平行球心连线方向的速度交换，垂直方向不变所以碰撞后：
+         * v1:(cosr2*v2,sinr1*v1)
+         *v2:(cosr1*v1,sinr2*v2)
+         *
+         * 碰撞后速度与球心连线的夹角分别为j1,j2则有
+         * */
+        var v11 = Math.pow(cosr2 * v2 * cosr2 * v2 + sinr1 * v1 * sinr1 * v1, 1 / 2);
+        var v22 = Math.pow(cosr1 * v1 * cosr1 * v1 + sinr2 * v2 * sinr2 * v2, 1 / 2);
+        var sinj1 = sinr1 * v1 / v11, cosj1 = cosr2 * v2 / v11;
+        var sinj2 = sinr2 * v2 / v22, cosj2 = cosr1 * v1 / v22;
+
+        /*
+         碰后的速度与xy坐标的夹角设为k1，和k2   则有k1 = o+j1  ,k2 = o+j2;
+         所以有
+         * */
+        var sink1 = sinj1 * coso + cosj1 * sino, cosk1 = cosj1 * coso - sinj1 * sino;
+        var sink2 = sinj2 * coso + cosj2 * sino, cosk2 = cosj2 * coso - sinj2 * sino;
+        //最终坐标为
+
+
+        b1.vx = cosk1 * v11;
+        b1.vy = sink1 * v11;
+
+        b2.vx = cosk2 * v22;
+        b2.vy = sink2 * v22;
+    }
+    function bumpDeal(balls) {
+        for (var i = 0; i < balls.length; i++) {
+            for (var j = i + 1; j < balls.length; j++) {
+                var r = (balls[i].r + balls[j].r) * (balls[i].r + balls[j].r);
+                var l = (balls[i].x - balls[j].x) * (balls[i].x - balls[j].x) + (balls[i].y - balls[j].y) * (balls[i].y - balls[j].y)
+                if (r >= l) {
+                    R = Math.floor(Math.random() * 256) << 16;
+                    G = Math.floor(Math.random() * 256) << 8;
+                    B = Math.floor(Math.random() * 256);
+                    var color = "#" + (R + G + B).toString(16);
+                    balls[i].color = color;
+                    R = Math.floor(Math.random() * 256) << 16;
+                    G = Math.floor(Math.random() * 256) << 8;
+                    B = Math.floor(Math.random() * 256);
+                    color = "#" + (R + G + B).toString(16);
+                    balls[j].color = color;
+                    seepDeal(balls[i], balls[j])
+                }
+
+            }
+        }
+    }
+    function getBalls(num) {
+        var balls = [];
+        for (var i = 0; i < num; i++) {
+            R = Math.floor(Math.random() * 256) << 16;
+            G = Math.floor(Math.random() * 256) << 8;
+            B = Math.floor(Math.random() * 256);
+            var color = "#" + (R + G + B).toString(16);
+            balls.push(
+                    {
+                        x: Math.random() * 550 + 5,
+                        y: Math.random() * 550 + 5,
+                        r: Math.random() * 20 + 1,
+                        vx: Math.random() * 2 + 1,
+                        vy: Math.random() * 2 + 1,
+                        color: color
+                    }
+            );
+        }
+        return balls;
+    }
+    function borderDeal(balls) {
+        for (var i = 0; i < balls.length; i++) {
+            b = balls[i];
+            b.x += b.vx;
+            b.y += b.vy;
+            if (b.x > 550) {
+                b.vx = -Math.abs(b.vx)
+            }
+            if (b.x < 50) {
+                b.vx = Math.abs(b.vx)
+            }
+            if (b.y > 550) {
+                b.vy = -Math.abs(b.vy)
+            }
+            if (b.y < 50) {
+                b.vy = Math.abs(b.vy)
+            }
+        }
+    }
+    function paintBalls(c, balls) {
+
+        for (var i = 0; i < balls.length; i++) {
+            b = balls[i];
+            c.beginPath();
+            c.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            c.fillStyle = b.color;
+            c.fill();
+            c.restore();
+            c.save();
+        }
+    }
+
+    var myCnavas = document.getElementById("myCanvas");
+    var c = myCnavas.getContext("2d");
+    var R, G, B;
+    c.translate(0, 0);
+    c.save();
+    function stop() {
+        stopFlag = !stopFlag;
+        if (stopFlag) {
+            if (interval) {
+                clearInterval(interval)
+            }
+        } else {
+            interval = setInterval(function () {
+                c.clearRect(0, 0, 600, 600);
+                c.save();
+                borderDeal(balls);
+                bumpDeal(balls);
+                paintBalls(c, balls);
+                c.restore();
+                c.save();
+            }, 20);
+        }
+
+    }
+    function ok() {
+        num = document.getElementById("num").value;
+        if (isNaN(num) || num > 10) {
+            alert("数量只能为数字或者小于等于10");
+            return;
+        }
+        if (interval) {
+            clearInterval(interval);
+        }
+        balls = getBalls(num);
+        interval = setInterval(function () {
+            c.clearRect(0, 0, 600, 600);
+            c.save();
+            borderDeal(balls);
+            bumpDeal(balls);
+            paintBalls(c, balls);
+            c.restore();
+            c.save();
+        }, 20);
+    }
+
+</script>
+</body>
+</html>
