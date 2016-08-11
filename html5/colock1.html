@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<time id="myTime"></time>
+<br>
+<canvas id="myCanvas" height="900" width="600" style="border: solid red"></canvas>
+<script>
+
+    function paintMaxColock(c) {
+        c.beginPath();
+        c.moveTo(120, 100);
+        c.lineTo(100, 150);
+        c.lineTo(-100, 150);
+        c.lineTo(-120, 100);
+        c.lineTo(-120, -100);
+        c.lineTo(-100, -150);
+        c.lineTo(100, -150);
+        c.lineTo(120, -100);
+        c.fillStyle = "#C0C0C0";
+        c.fill();
+        c.closePath();
+        c.stroke();
+
+        c.beginPath();
+        c.arc(0, 0, 5, Math.PI * 2, 0);
+        c.stroke();
+        c.restore();
+        c.save();
+    }
+    function paintMinColok() {
+        c.translate(40, 60);
+        c.save();
+        //画小表盘圆心
+        c.beginPath();
+        c.lineWidth = 3;
+        c.arc(0, 0, 1, Math.PI * 2, 0);
+        c.stroke();
+        c.restore();
+        c.save();
+        c.beginPath();
+        for (i = 0; i != 30; i++) {
+            c.moveTo(35, 0);
+            c.lineTo(32, 0);
+            c.rotate(Math.PI / 15);
+        }
+        c.stroke();
+        c.restore();
+        c.restore();
+        c.save();
+    }
+    function paintHear() {
+    }
+    function patintHourHands(c, h, m, s) {
+
+        //画时针
+        c.beginPath();
+        c.rotate(h * Math.PI / 6 + m * Math.PI / 360 + s * Math.PI / 21600 - Math.PI / 2);
+        c.moveTo(70, 0);
+        c.lineTo(-20, 0);
+        c.stroke();
+        //画箭头
+        c.beginPath();
+        c.moveTo(65, -2);
+        c.lineTo(70, 0);
+        c.lineTo(65, 2);
+        c.closePath();
+        c.stroke();
+
+        //画弓
+        c.beginPath();
+        c.moveTo(-30, 0);
+        c.arc(-20, 0, 60, Math.PI * 5 / 3, Math.PI / 3);
+        c.closePath();
+        c.stroke();
+
+        //画末尾的红心
+        c.beginPath();
+        c.moveTo(-30, 0);
+        c.bezierCurveTo(-38, 9, -24, 9, -20, 0);
+        c.moveTo(-30, 0);
+        c.bezierCurveTo(-38, -9, -24, -9, -20, 0);
+        c.fillStyle = '#C00000';
+        c.fill();
+        c.stroke();
+
+        c.beginPath();
+        c.moveTo(-30, 0);
+        c.lineTo(10, Math.sin(Math.PI / 3) * 60);
+        c.stroke();
+
+        c.restore();
+        c.save();
+    }
+    function patintMinHands(c, min, s) {
+        c.beginPath();
+        c.rotate(min * Math.PI / 30 + s * Math.PI / 1800 - Math.PI / 2);
+        c.moveTo(100, 0);
+        c.lineTo(92, 4);
+        c.lineTo(2, 4);
+        c.lineTo(2, 10);
+        c.lineTo(-2, 10);
+        c.lineTo(-2, 2);
+
+        c.lineTo(-40, 2);
+        c.lineTo(-40, -2);
+
+        c.lineTo(-2, -2);
+        c.lineTo(-2, -10);
+        c.lineTo(2, -10);
+        c.lineTo(2, -4);
+        c.lineTo(92, -4);
+        c.closePath();
+        c.fillStyle = '#C00000';
+        c.fill();
+        c.stroke();
+        c.restore();
+        c.save();
+    }
+    function patintSecondsHands(c, s, ms) {
+        c.beginPath();
+
+        //画秒针
+        c.translate(40, 60);
+        c.rotate(s * Math.PI / 30 + ms * Math.PI / 30000 - Math.PI / 2);
+        c.moveTo(25, 0);
+        c.lineTo(-5, 0);
+        c.stroke();
+
+        //画秒针的小箭头
+        c.beginPath();
+        c.moveTo(18, -2);
+        c.lineTo(23, 0);
+        c.lineTo(18, 2);
+        c.closePath();
+        c.stroke();
+
+        //画秒针的尾端的圆
+        c.beginPath();
+        c.arc(-8, 0, 3, Math.PI * 2, 0);
+        c.stroke();
+
+        c.restore();
+        c.save();
+    }
+    var myCnavas = document.getElementById("myCanvas");
+    var c = myCnavas.getContext("2d");
+    var date, week, hour, min, s, ms;
+    var i, j, x, y;
+    setInterval(function () {
+        date = new Date();
+        document.getElementById("myTime").innerHTML = date;
+        week = date.getDay();
+        hour = date.getHours() % 12;
+        min = date.getMinutes();
+        s = date.getSeconds();
+        ms = date.getMilliseconds();
+        c.clearRect(0, 0, 600, 900);
+        c.save();
+        //设置300,300为原点
+        c.translate(300, 300);
+        c.save();
+        paintMaxColock(c);//
+        paintMinColok(c);
+        patintSecondsHands(c, s, ms);
+        patintHourHands(c, hour, min, s);
+        patintMinHands(c, min, s);
+
+        c.restore();
+        c.restore();
+    }, 10);
+
+
+</script>
+</body>
+</html>
